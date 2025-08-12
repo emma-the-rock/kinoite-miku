@@ -2,23 +2,41 @@
 
 set -ouex pipefail
 
-### Install packages
+# Adding repositories should be a LAST RESORT. Contributing to Terra or `ublue-os/packages` is much preferred
+# over using random coprs. Please keep this in mind when adding external dependencies.
+# If adding any dependency, make sure to always have it disabled by default and _only_ enable it on `dnf install`
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/39/x86_64/repoview/index.html&protocol=https&redirect=1
+dnf5 config-manager addrepo --set=baseurl="https://packages.microsoft.com/yumrepos/vscode" --id="vscode"
+dnf5 config-manager setopt vscode.enabled=0
+# FIXME: gpgcheck is broken for vscode due to it using `asc` for checking
+# seems to be broken on newer rpm security policies.
+dnf5 config-manager setopt vscode.gpgcheck=0
+dnf5 install --nogpgcheck --enable-repo="vscode" -y \
+    code
 
-# this installs a package from fedora repos
-dnf5 install -y tmux 
+docker_pkgs=(
+    containerd.io
+    docker-buildx-plugin
+    docker-ce
+    docker-ce-cli
+    docker-compose-plugin
+)
+dnf5 config-manager addrepo --from-repofile="https://download.docker.com/linux/fedora/docker-ce.repo"
+dnf5 config-manager setopt docker-ce-stable.enabled=0
+dnf5 install -y --enable-repo="docker-ce-stable" "${docker_pkgs[@]}" || {
+    # Use test packages if docker pkgs is not available for f42
+    if (($(lsb_release -sr) == 42)); then
+        echo "::info::Missing docker packages in f42, falling back to test repos..."
+        dnf5 install -y --enablerepo="docker-ce-test" "${docker_pkgs[@]}"
+    fi
+}
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
+# Load iptable_nat module for docker-in-docker.
+# See:
+#   - https://github.com/ublue-os/bluefin/issues/2365
+#   - https://github.com/devcontainers/features/issues/1235
+mkdir -p /etc/modules-load.d && cat >>/etc/modules-load.d/ip_tables.conf <<EOF
+iptable_nat
+EOF
 
-#### Example for enabling a System Unit File
-
-systemctl enable podman.socket
+systemctl enable docker.service
