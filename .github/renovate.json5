@@ -17,5 +17,13 @@
       "matchDepTypes": ["container"],
       "matchFileNames": [".github/workflows/**.yaml", ".github/workflows/**.yml"],
     },
+    {
+      "automerge": true,
+      "matchUpdateTypes": ["digest"],
+      "matchDepNames": [
+        "ghcr.io/ublue-os/kinoite-main",
+        "ghcr.io/ublue-os/brew"
+      ]
+    }
   ]
 }
