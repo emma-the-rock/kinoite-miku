@@ -2,17 +2,23 @@
 
 set -ouex pipefail
 
-### Install packages
+# Fedora packages
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
+FEDORA_PACKAGES=(
+    incus
+    incus-agent
+    fastfetch
+    fish
+    lxc
+    podman-compose
+    podman-machine
+    rclone
+    zsh
+)
 
-# this installs a package from fedora repos
+dnf -y install  "${FEDORA_PACKAGES[@]}"
+
 # Docker packages from their repo
-
-dnf -y install fish zsh
 
 dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
 sed -i "s/enabled=.*/enabled=0/g" /etc/yum.repos.d/docker-ce.repo
@@ -38,13 +44,11 @@ sed -i "s/enabled=.*/enabled=0/g" /etc/yum.repos.d/vscode.repo
 dnf -y install --enablerepo=code \
     code
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
+# Install tailscale package from their repo
+echo "Installing tailscale from official repo..."
+dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+dnf config-manager setopt tailscale-stable.enabled=0
+dnf -y install --enablerepo='tailscale-stable' tailscale
 
-#### Example for enabling a System Unit File
 
 systemctl enable podman.socket
