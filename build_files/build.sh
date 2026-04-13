@@ -11,6 +11,9 @@ set -ouex pipefail
 
 # this installs a package from fedora repos
 # Docker packages from their repo
+
+dnf -y install fish zsh
+
 dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
 sed -i "s/enabled=.*/enabled=0/g" /etc/yum.repos.d/docker-ce.repo
 dnf -y install --enablerepo=docker-ce-stable \
