@@ -74,7 +74,7 @@ fi
 
 # Install kernel packages (noscripts required for 43+)
 dnf install -y \
-    --enablerepo="copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos" \
+    --enablerepo="copr:copr.fedorainfracloud.org:bieszczaders:kernel-cachyos-lto" \
     --allowerasing \
     --setopt=tsflags=noscripts \
     kernel-cachyos-lto \
