@@ -113,4 +113,4 @@ chmod 0600 "/lib/modules/${KERNEL_VERSION}/initramfs.img"
 
 
 systemctl enable podman.socket
-systemctl enable tailscaled.
+systemctl enable tailscaled.service
