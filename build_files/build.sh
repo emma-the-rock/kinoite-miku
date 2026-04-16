@@ -13,6 +13,7 @@ FEDORA_PACKAGES=(
     podman-compose
     podman-machine
     rclone
+    waydroid
     zsh
 )
 
